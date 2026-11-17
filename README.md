@@ -2,9 +2,58 @@
 
 [![ShopPulse CI](https://github.com/moknihadil-eng/shoppulse-data-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/moknihadil-eng/shoppulse-data-platform/actions/workflows/ci.yml)
 
-Plateforme Data Engineering locale pour une boutique e-commerce, d'après les
-pages 4 et 5 de la roadmap 2027. Les sept jalons sont implémentés ; les preuves
-locales figurent dans les rapports de validation. Les sources sont synthétiques.
+**Data Engineering · Python / SQL · PostgreSQL · MinIO · dbt · Dagster · Metabase**
+
+Une plateforme e-commerce reproductible qui transforme des sources opérationnelles
+en indicateurs de vente testés. Elle démontre l'ingestion incrémentale, les reprises
+sans doublons, l'historisation SCD2 et l'orchestration jusqu'au dashboard.
+Les données sont **synthétiques** et la livraison est **locale**, pas un service en production.
+
+[Architecture](docs/architecture.md) · [Modèles dbt](dbt/models) ·
+[Validation CI](https://github.com/moknihadil-eng/shoppulse-data-platform/actions/runs/44076721749) ·
+[Démo et runbook](docs/runbook.md) · [Release v1.0.0](https://github.com/moknihadil-eng/shoppulse-data-platform/releases/tag/v1.0.0)
+
+## Le projet en 30 secondes
+
+| Ce que je démontre | Preuve consultable |
+|---|---|
+| Extraire base, API paginée et CSV sans dupliquer les versions | [Pipeline d'ingestion](ingestion/pipeline.py) et [tests de reprise](ingestion/verify_m2.py) |
+| Construire une étoile et conserver l'historique client | [18 modèles dbt](dbt/models), dont une [dimension SCD2](dbt/models/intermediate/int_customer_history.sql) |
+| Bloquer les données invalides et détecter les données périmées | **62 tests** et [rapport de validation](docs/platform-verification.md) |
+| Exploiter la chaîne avec planification, retries et backfill | [Jobs Dagster](orchestration/definitions.py) et [lancement par le daemon](tests/check_deployment.py) |
+| Exposer des résultats utilisables | [6 questions Metabase](dashboards/cards.json) et [features clients](dbt/models/marts/customer_features.sql) |
+
+## Architecture d'ensemble
+
+```mermaid
+flowchart LR
+    S[PostgreSQL + API + CSV] --> I[Ingestion incrémentale]
+    I --> R[(MinIO raw)]
+    R --> W[(Warehouse PostgreSQL)]
+    W --> T[dbt : staging → marts]
+    T --> B[Metabase + features]
+    D[Dagster : planning, retries, backfill] -. orchestre .-> I
+    D -. orchestre .-> T
+```
+
+La séparation entre la base opérationnelle et le warehouse évite de mélanger les
+transactions de la boutique avec les traitements analytiques. Les versions brutes
+permettent le rejeu ; les tests contrôlent la qualité avant la publication des marts.
+
+## Où trouver quoi
+
+```text
+ingestion/        Sources, fixtures, checkpoints et tests de reprise
+dbt/              Modèles staging, intermediate, marts et tests SQL
+orchestration/    Jobs, planning et configuration Dagster
+platform/         Chargement du warehouse et exécution de la chaîne
+dashboards/       Questions Metabase versionnées
+infrastructure/  Images et initialisation des services
+scripts/          Démarrage, démo et vérifications PowerShell
+tests/            Validation du déploiement et des interfaces
+docs/             Architecture, résultats, runbook et guide d'entretien
+.github/          Workflow CI sur runner Linux neuf
+```
 
 ## Démarrer avec une commande PowerShell
 
