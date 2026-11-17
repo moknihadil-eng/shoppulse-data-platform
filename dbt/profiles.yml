@@ -1,0 +1,14 @@
+shoppulse:
+  target: local
+  outputs:
+    local:
+      type: postgres
+      host: warehouse
+      port: 5432
+      user: "{{ env_var('PGUSER') }}"
+      password: "{{ env_var('PGPASSWORD') }}"
+      dbname: "{{ env_var('WAREHOUSE_DB', 'shoppulse_warehouse') }}"
+      schema: analytics
+      threads: 2
+      connect_timeout: 15
+      keepalives_idle: 0

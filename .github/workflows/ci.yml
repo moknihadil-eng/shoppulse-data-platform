@@ -1,0 +1,69 @@
+name: ShopPulse CI
+on:
+  pull_request:
+    paths-ignore: ['**/*.md']
+  push:
+    branches: [main, master]
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create isolated local secrets
+        run: |
+          python - <<'PY'
+          import pathlib, secrets
+          settings = pathlib.Path('.env.example').read_text()
+          for line in settings.splitlines():
+              if 'PASSWORD=' in line:
+                  settings = settings.replace(line, line.split('=')[0] + '=Sp!' + secrets.token_hex(24))
+          pathlib.Path('.env').write_text(settings)
+          pathlib.Path('.local/reports').mkdir(parents=True, exist_ok=True)
+          PY
+      - name: Validate and build
+        run: |
+          docker compose config --quiet
+          docker compose build minio foundation ingestion source-api platform
+          docker compose run --rm --no-deps --entrypoint python platform -m compileall -q /app
+          docker compose run --rm --no-deps --entrypoint pip platform check
+      - name: Start sources and warehouse
+        run: |
+          docker compose up -d --wait postgres minio warehouse source-api
+          docker compose run --rm foundation init
+      - name: Check M1 persistence
+        run: |
+          docker compose run --rm foundation before
+          docker compose restart postgres minio
+          docker compose up -d --wait postgres minio
+          docker compose run --rm foundation after
+      - name: Check M2 retries and idempotence
+        run: |
+          docker compose build ingestion
+          docker compose run --rm --entrypoint python ingestion verify_m2.py
+      - name: Run pipeline and full integration checks
+        run: |
+          docker compose run --rm platform run
+          docker compose run --rm platform verify
+      - name: Local deployment smoke test
+        run: |
+          docker compose up -d --wait dagster metabase dbt-docs
+          docker compose run --rm platform metabase
+          docker compose run --rm platform demo-order
+          docker compose run --rm platform metabase
+          docker compose run --rm -T --no-deps --entrypoint python platform - < tests/check_deployment.py
+      - name: Save diagnostic logs
+        if: always()
+        run: docker compose logs --no-color --tail 200 > .local/reports/compose.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shoppulse-validation
+          path: .local/reports/
+      - name: Cleanup CI volumes
+        if: always()
+        run: docker compose down -v

@@ -1,0 +1,8 @@
+[
+  {"name":"Commandes","display":"scalar","sql":"SELECT count(*) AS orders FROM marts.fact_orders"},
+  {"name":"Chiffre d'affaires encaisse (EUR)","display":"scalar","sql":"SELECT coalesce(sum(amount),0) AS paid_revenue FROM marts.fact_payments WHERE status='succeeded'"},
+  {"name":"Ventes par jour","display":"table","sql":"SELECT * FROM marts.daily_sales ORDER BY sales_date"},
+  {"name":"Produits vendus","display":"table","sql":"SELECT * FROM marts.product_sales ORDER BY paid_revenue DESC"},
+  {"name":"Statut des paiements","display":"table","sql":"SELECT status,count(*) AS payments,sum(amount) AS amount FROM marts.fact_payments GROUP BY status ORDER BY status"},
+  {"name":"Features clients (30 jours)","display":"table","sql":"SELECT * FROM marts.customer_features ORDER BY customer_id"}
+]

@@ -1,0 +1,6 @@
+boto3==1.40.30
+psycopg[binary]==3.2.10
+dbt-core==1.10.13
+dbt-postgres==1.9.1
+dagster==1.11.13
+dagster-webserver==1.11.13

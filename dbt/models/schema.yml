@@ -1,0 +1,149 @@
+version: 2
+sources:
+  - name: bronze
+    schema: bronze
+    description: Versions brutes immuables chargees depuis les manifestes MinIO reussis.
+    tables:
+      - name: raw_records
+        columns:
+          - name: object_key
+            data_tests: [unique, not_null]
+      - name: ingestion_clock
+        loaded_at_field: checked_at
+        freshness:
+          warn_after: {count: 2, period: hour}
+          error_after: {count: 24, period: hour}
+models:
+  - name: stg_customers
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: email
+        data_tests: [not_null]
+      - name: country_code
+        data_tests: [not_null]
+  - name: stg_products
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: stg_orders
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('stg_customers')", field: customer_id}
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments: {values: [paid, pending, cancelled]}
+  - name: stg_order_items
+    columns:
+      - name: order_item_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('stg_orders')", field: order_id}
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('stg_products')", field: product_id}
+  - name: stg_payments
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
+      - name: amount
+        data_tests: [not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('stg_orders')", field: order_id}
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments: {values: [succeeded, pending, failed]}
+  - name: stg_events
+    columns:
+      - name: event_id
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('stg_customers')", field: customer_id}
+  - name: stg_shipping
+    columns:
+      - name: shipping_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('stg_orders')", field: order_id}
+  - name: dim_customer
+    description: SCD Type 2 ; intervalles valid_from inclus et valid_to exclus.
+    columns:
+      - name: customer_key
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [not_null]
+      - name: valid_from
+        data_tests: [not_null]
+  - name: dim_product
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+  - name: dim_date
+    columns:
+      - name: date_key
+        data_tests: [unique, not_null]
+  - name: fact_orders
+    description: Une ligne par commande, montant calcule depuis les lignes achetees.
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: customer_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: "ref('dim_customer')", field: customer_key}
+      - name: date_key
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('dim_date')", field: date_key}
+  - name: fact_order_items
+    columns:
+      - name: order_item_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('fact_orders')", field: order_id}
+      - name: product_key
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('dim_product')", field: product_key}
+  - name: fact_payments
+    columns:
+      - name: payment_id
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments: {to: "ref('fact_orders')", field: order_id}
+  - name: daily_sales
+    columns:
+      - name: sales_date
+        data_tests: [unique, not_null]
+  - name: product_sales
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+  - name: customer_features
+    description: Features sur 30 jours avant as_of_date, sans cible ni entrainement ML.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: as_of_date
+        data_tests: [not_null]

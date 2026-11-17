@@ -1,0 +1,4 @@
+shipping_id,order_id,carrier,status,updated_at
+1,1,synthetic_carrier,delivered,2027-01-03T09:00:00+00:00
+2,2,synthetic_carrier,in_transit,2027-01-03T10:00:00+00:00
+3,3,synthetic_carrier,in_transit,2027-01-03T11:00:00+00:00

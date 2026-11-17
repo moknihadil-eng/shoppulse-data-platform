@@ -1,0 +1,5 @@
+[
+  {"event_id":1,"customer_id":1,"event_type":"page_view","updated_at":"2027-01-02T09:00:00+00:00"},
+  {"event_id":2,"customer_id":2,"event_type":"add_to_cart","updated_at":"2027-01-02T09:05:00+00:00"},
+  {"event_id":3,"customer_id":1,"event_type":"checkout","updated_at":"2027-01-02T09:10:00+00:00"}
+]

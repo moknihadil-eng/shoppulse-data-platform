@@ -1,0 +1,13 @@
+telemetry:
+  enabled: false
+storage:
+  sqlite:
+    base_dir: /dagster/home/storage
+run_launcher:
+  module: dagster
+  class: DefaultRunLauncher
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    max_concurrent_runs: 1

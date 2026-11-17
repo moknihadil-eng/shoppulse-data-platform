@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+.tools
+.local
+.git
+**/__pycache__
+dbt/target
+dbt/logs
