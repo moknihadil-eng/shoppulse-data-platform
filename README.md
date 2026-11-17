@@ -48,10 +48,15 @@ est enregistrée dans `.local/reports/metabase.json`. Les ports Windows sont lim
 | M6 | Dashboard Metabase à six questions, compte BI en lecture seule, features clients exportables |
 | M7 | Workflow GitHub Actions, scripts PowerShell, diagramme, lineage, démo et runbook |
 
-Le workflow CI est prêt pour les pull requests et la branche principale. Les
-vérifications ont été exécutées localement ; aucune exécution GitHub ni aucun
-déploiement cloud n'est revendiqué avant publication dans un dépôt distant.
-Le workflow inclut un déploiement local éphémère et un test des interfaces.
+Le projet est publié dans le dépôt privé
+[moknihadil-eng/shoppulse-data-platform](https://github.com/moknihadil-eng/shoppulse-data-platform).
+La [CI GitHub Actions a réussi](https://github.com/moknihadil-eng/shoppulse-data-platform/actions/runs/44076721749)
+le 17 novembre 2026 : construction, persistance, ingestion, qualité et déploiement
+éphémère avec vérification des interfaces. Les artefacts contiennent les preuves.
+Le workflow vérifie les pull requests et les changements de code sur la branche
+principale ; les modifications uniquement Markdown ne relancent pas les builds.
+La [livraison v1.0.0](docs/release.md) distingue cette validation distante d'un
+hébergement cloud permanent, qui reste une extension optionnelle.
 
 ## Ce que fait le pipeline
 

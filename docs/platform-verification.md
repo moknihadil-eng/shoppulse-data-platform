@@ -1,8 +1,12 @@
 # Validation locale M1-M7 - 16 novembre 2026
 
-Les sept jalons sont implementes et la chaine a ete executee localement. Le
-workflow GitHub Actions est fourni ; aucun run distant n'est revendique, car
-ce dossier n'a pas ete publie sur GitHub dans cette session.
+Les sept jalons sont implementes et la chaine a ete executee localement. Ces
+preuves historiques sont completees par la validation GitHub Actions du
+17 novembre 2026 sur un runner Linux neuf :
+[run 44076721749 reussi](https://github.com/moknihadil-eng/shoppulse-data-platform/actions/runs/44076721749).
+Le commit de code teste est `324dae46e4a6b47e0b8ebade03d8c7de769b05f2`.
+Les rapports telecharges de cet artefact confirment 62 tests passes, fraicheur
+valide, six cartes Metabase et un lancement Dagster termine en SUCCESS.
 
 ## Resultats fonctionnels observes
 
